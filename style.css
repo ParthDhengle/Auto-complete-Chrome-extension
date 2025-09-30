@@ -2,17 +2,16 @@
 
 /* This provides the styling for the ghost text overlay. */
 #intellitype-ghost {
-    position: absolute;
-    /* This will be overwritten by JS, but good for fallback */
-    background: transparent;
-    color: grey;
-    opacity: 0.6;
-    pointer-events: none;
-    /* Prevents the ghost text from being selectable or clickable */
-    z-index: 9999;
-    /* Ensure it's on top */
-    display: none;
-    /* Initially hidden */
-    white-space: pre;
-    /* Respects spaces and line breaks from the suggestion */
+  position: absolute;
+  /* This will be overwritten by JS, but good for fallback */
+  background: transparent;
+  color: grey;
+  opacity: 0.6;
+  pointer-events: none;
+  /* Prevents the ghost text from being selectable or clickable */
+  z-index: 9999;
+  /* Ensure it's on top */
+  display: none;
+  /* Initially hidden */
+  /* Removed white-space: pre; as it's now set dynamically in JS */
 }

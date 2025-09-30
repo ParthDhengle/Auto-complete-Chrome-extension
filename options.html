@@ -1,188 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntelliType Options</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f5f7;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #172b4d;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntelliType Options</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f4f5f7;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #172b4d;
+    }
 
-        .container {
-            background-color: #ffffff;
-            padding: 30px 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-        }
+    .container {
+      background-color: #ffffff;
+      padding: 30px 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+    }
 
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            text-align: center;
-            color: #091e42;
-        }
-        
-        p {
-            font-size: 14px;
-            color: #5e6c84;
-            text-align: center;
-            margin-bottom: 30px;
-        }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      text-align: center;
+      color: #091e42;
+    }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+    p {
+      font-size: 14px;
+      color: #5e6c84;
+      text-align: center;
+      margin-bottom: 30px;
+    }
 
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
+    .form-group {
+      margin-bottom: 20px;
+    }
 
-        input[type="text"],
-        input[type="password"],
-        select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid #dfe1e6;
-            background-color: #fafbfc;
-            box-sizing: border-box;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #4c9aff;
-            box-shadow: 0 0 0 2px rgba(76, 154, 255, 0.3);
-        }
+    input[type="text"],
+    input[type="password"],
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #dfe1e6;
+      background-color: #fafbfc;
+      box-sizing: border-box;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 4px;
-            background-color: #0052cc;
-            color: white;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            position: relative;
-        }
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #4c9aff;
+      box-shadow: 0 0 0 2px rgba(76, 154, 255, 0.3);
+    }
 
-        button:hover:not(:disabled) {
-            background-color: #0065ff;
-        }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      background-color: #0052cc;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      position: relative;
+    }
 
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
+    button:hover:not(:disabled) {
+      background-color: #0065ff;
+    }
 
-        .spinner {
-            display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #ffffff;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-        }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
 
-        button:disabled .spinner {
-            display: block;
-        }
+    .spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #ffffff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
 
-        button:disabled .button-text {
-            opacity: 0;
-        }
+    button:disabled .spinner {
+      display: block;
+    }
 
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
+    button:disabled .button-text {
+      opacity: 0;
+    }
 
-        #status {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 14px;
-            padding: 10px;
-            border-radius: 4px;
-            min-height: 20px;
-            transition: opacity 0.3s;
-        }
+    @keyframes spin {
+      to {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
+    }
 
-        .status-success {
-            background-color: #e3fcef;
-            color: #006644;
-            border: 1px solid #79f2c0;
-        }
+    #status {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      padding: 10px;
+      border-radius: 4px;
+      min-height: 20px;
+      transition: opacity 0.3s;
+    }
 
-        .status-error {
-            background-color: #ffebe6;
-            color: #bf2600;
-            border: 1px solid #ff8f73;
-        }
+    .status-success {
+      background-color: #e3fcef;
+      color: #006644;
+      border: 1px solid #79f2c0;
+    }
 
-        .status-loading {
-            background-color: #deebff;
-            color: #0052cc;
-            border: 1px solid #4c9aff;
-        }
+    .status-error {
+      background-color: #ffebe6;
+      color: #bf2600;
+      border: 1px solid #ff8f73;
+    }
 
-        .help-text {
-            font-size: 12px;
-            color: #6b778c;
-            margin-top: 5px;
-        }
-    </style>
+    .status-loading {
+      background-color: #deebff;
+      color: #0052cc;
+      border: 1px solid #4c9aff;
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: #6b778c;
+      margin-top: 5px;
+    }
+
+    .config {
+      border: 1px solid #dfe1e6;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+
+    #addFallback {
+      background-color: #f4f5f7;
+      color: #172b4d;
+      margin-bottom: 20px;
+    }
+
+    #addFallback:hover {
+      background-color: #ebecf0;
+    }
+
+    #helpButton {
+      background-color: #f4f5f7;
+      color: #172b4d;
+      margin-top: 10px;
+    }
+
+    #helpButton:hover {
+      background-color: #ebecf0;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>IntelliType Settings</h1>
+    <p>Configure your AI providers and keys to enable smart completions.</p>
 
-    <div class="container">
-        <h1>IntelliType Settings</h1>
-        <p>Configure your AI model and API key to enable smart completions.</p>
-        
-        <div class="form-group">
-            <label for="apiModel">AI Provider</label>
-            <select id="apiModel">
-                <option value="gemini-2.5-flash-preview-05-20">Google Gemini 1.5 Flash</option>
-                <option value="openai-gpt-4">OpenAI GPT-4</option>
-                <option value="openai-gpt-3.5">OpenAI GPT-3.5 Turbo</option>
-                <option value="anthropic-claude">Anthropic Claude</option>
-            </select>
-            <div class="help-text">Select your preferred AI provider</div>
-        </div>
+    <div id="configs"></div>
 
-        <div class="form-group">
-            <label for="apiKey">API Key</label>
-            <input type="password" id="apiKey" placeholder="Enter your API key">
-            <div class="help-text">Your API key is stored locally and never shared</div>
-        </div>
-        
-        <button id="saveButton">
-            <span class="button-text">Save & Test Configuration</span>
-            <span class="spinner"></span>
-        </button>
-        <div id="status"></div>
-    </div>
+    <button id="addFallback">Add Fallback Provider</button>
 
-    <script src="options.js"></script>
+    <button id="saveButton">
+      <span class="button-text">Save & Test Configurations</span>
+      <span class="spinner"></span>
+    </button>
+
+    <button id="helpButton">How to get LLM keys?</button>
+
+    <div id="status"></div>
+  </div>
+
+  <script src="options.js"></script>
 </body>
 </html>

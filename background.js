@@ -2,100 +2,269 @@
 
 // Listens for the extension's installation to set default values and open options
 chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === 'install') {
-    // Set default values for the API model and key in chrome.storage.sync
-    chrome.storage.sync.set({
-      apiModel: 'gemini-2.5-flash-preview-05-20',
-      apiKey: '',
-      isConfigured: false
-    }, () => {
-      console.log('IntelliType extension installed.');
-      // Open options page on first install
-      chrome.runtime.openOptionsPage();
-    });
+  if (details.reason === "install") {
+    // Set default values
+    chrome.storage.sync.set(
+      {
+        apiConfigs: [],
+        isConfigured: false,
+      },
+      () => {
+        console.log("IntelliType extension installed.");
+        // Open options page on first install
+        chrome.runtime.openOptionsPage();
+      }
+    );
   }
 });
 
+// Provider configurations
+const providers = {
+  "google-gemini": {
+    getUrl: (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+    getHeaders: (key) => ({ "Content-Type": "application/json" }),
+    getBody: (prompt) =>
+      JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+      }),
+    getParams: (key) => `?key=${key}`,
+    parseResponse: (json) => json.candidates[0].content.parts[0].text.trim(),
+    testPrompt: "Hello",
+    hasUsageApi: false,
+  },
+  openai: {
+    getUrl: () => "https://api.openai.com/v1/chat/completions",
+    getHeaders: (key) => ({ "Content-Type": "application/json", Authorization: `Bearer ${key}` }),
+    getBody: (prompt, model) =>
+      JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      }),
+    parseResponse: (json) => json.choices[0].message.content.trim(),
+    testPrompt: "Hello",
+    hasUsageApi: false,
+  },
+  anthropic: {
+    getUrl: () => "https://api.anthropic.com/v1/messages",
+    getHeaders: (key) => ({
+      "Content-Type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+    }),
+    getBody: (prompt, model) =>
+      JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      }),
+    parseResponse: (json) => json.content[0].text.trim(),
+    testPrompt: "Hello",
+    hasUsageApi: false,
+  },
+  groq: {
+    getUrl: () => "https://api.groq.com/openai/v1/chat/completions",
+    getHeaders: (key) => ({ "Content-Type": "application/json", Authorization: `Bearer ${key}` }),
+    getBody: (prompt, model) =>
+      JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      }),
+    parseResponse: (json) => json.choices[0].message.content.trim(),
+    testPrompt: "test",
+    hasUsageApi: true,
+    getUsage: async (config) => {
+      const url = providers["groq"].getUrl();
+      const body = providers["groq"].getBody("test", config.model);
+      const headers = providers["groq"].getHeaders(config.value);
+      const res = await fetch(url, { method: "POST", headers, body });
+      if (!res.ok) return "N/A";
+      const limitRequests = res.headers.get("x-ratelimit-limit-requests");
+      const remainingRequests = res.headers.get("x-ratelimit-remaining-requests");
+      if (limitRequests && remainingRequests) {
+        return `${Math.round((remainingRequests / limitRequests) * 100)}% remaining`;
+      }
+      return "N/A";
+    },
+  },
+  deepseek: {
+    getUrl: () => "https://api.deepseek.com/v1/chat/completions",
+    getHeaders: (key) => ({ "Content-Type": "application/json", Authorization: `Bearer ${key}` }),
+    getBody: (prompt, model) =>
+      JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      }),
+    parseResponse: (json) => json.choices[0].message.content.trim(),
+    testPrompt: "Hello",
+    hasUsageApi: false,
+  },
+  openrouter: {
+    getUrl: () => "https://openrouter.ai/api/v1/chat/completions",
+    getHeaders: (key) => ({ "Content-Type": "application/json", Authorization: `Bearer ${key}` }),
+    getBody: (prompt, model) =>
+      JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      }),
+    parseResponse: (json) => json.choices[0].message.content.trim(),
+    testPrompt: "Hello",
+    hasUsageApi: true,
+    getUsage: async (config) => {
+      const url = "https://openrouter.ai/api/v1/key";
+      const headers = { Authorization: `Bearer ${config.value}` };
+      const res = await fetch(url, { method: "GET", headers });
+      if (!res.ok) return "N/A";
+      const json = await res.json();
+      const { usage, limit, is_free_tier } = json.data;
+      if (limit !== null) {
+        return `${Math.round(((limit - usage) / limit) * 100)}% remaining`;
+      } else if (is_free_tier) {
+        return "Free Tier";
+      } else {
+        return "Unlimited";
+      }
+    },
+  },
+  ollama: {
+    getUrl: (baseUrl) => `${baseUrl}/v1/chat/completions`,
+    getHeaders: () => ({ "Content-Type": "application/json" }),
+    getBody: (prompt, model) =>
+      JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      }),
+    parseResponse: (json) => json.choices[0].message.content.trim(),
+    testPrompt: "Hello",
+    hasUsageApi: false,
+  },
+  lmstudio: {
+    getUrl: (baseUrl) => `${baseUrl}/v1/chat/completions`,
+    getHeaders: () => ({ "Content-Type": "application/json" }),
+    getBody: (prompt, model) =>
+      JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      }),
+    parseResponse: (json) => json.choices[0].message.content.trim(),
+    testPrompt: "Hello",
+    hasUsageApi: false,
+  },
+};
+
 // Test API key validity
-async function testApiKey(apiKey, apiModel) {
+async function testApiKey(config) {
   try {
-    // This is a placeholder for actual API validation
-    // Replace with actual API endpoint based on the model
-    console.log('Testing API key for model:', apiModel);
-    
-    // For now, simulate API test (replace with real API call later)
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Simulate: if API key has minimum length, consider it valid
-        const isValid = apiKey && apiKey.length > 10;
-        resolve({
-          valid: isValid,
-          message: isValid ? 'API key is valid' : 'Invalid API key format'
-        });
-      }, 1000);
-    });
+    const providerConfig = providers[config.provider];
+    if (!providerConfig) {
+      return { valid: false, message: 'Unsupported provider' };
+    }
+
+    let url = providerConfig.getUrl(config.value); // for local, value is baseUrl
+    if (config.provider === 'google-gemini') {
+      url += providerConfig.getParams(config.value);
+    }
+    const headers = providerConfig.getHeaders(config.value);
+    const body = providerConfig.getBody(providerConfig.testPrompt, config.model);
+    const res = await fetch(url, { method: 'POST', headers, body });
+
+    if (res.ok) {
+      return { valid: true, message: 'API key is valid' };
+    } else {
+      const errorText = await res.text();
+      return { valid: false, message: `API test failed: ${res.status} - ${errorText}` };
+    }
   } catch (error) {
-    return {
-      valid: false,
-      message: 'API test failed: ' + error.message
-    };
+    return { valid: false, message: 'API test failed: ' + error.message };
   }
 }
+// Fetch completion using fallbacks
+async function fetchCompletion(context) {
+  const prompt = `Provide the next phrase or sentence to complete this text: ${context}`;
+  const { apiConfigs, isConfigured } = await chrome.storage.sync.get(["apiConfigs", "isConfigured"]);
 
-// Listens for messages from content scripts and options page
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  
-  // Test API key validity
-  if (request.action === 'testApiKey') {
-    testApiKey(request.apiKey, request.apiModel).then(result => {
-      sendResponse(result);
-    });
-    return true; // Async response
+  if (!isConfigured || !apiConfigs.length) {
+    return { error: "No API configured. Please set up in options." };
   }
-  
-  // Fetch completion
-  if (request.action === 'fetchCompletion') {
-    chrome.storage.sync.get(['apiModel', 'apiKey', 'isConfigured'], async ({ apiModel, apiKey, isConfigured }) => {
-      if (!isConfigured || !apiKey) {
-        console.log('API key is not configured. Please configure it in the options.');
-        sendResponse({
-          error: 'API key not configured. Please set up the extension in options.'
-        });
-        return;
+
+  for (const config of apiConfigs) {
+    try {
+      const providerConfig = providers[config.provider];
+      let url = providerConfig.getUrl(config.value);
+      if (config.provider === "google-gemini") {
+        url += providerConfig.getParams(config.value);
       }
+      const headers = providerConfig.getHeaders(config.value);
+      const body = providerConfig.getBody(prompt, config.model);
+      const res = await fetch(url, { method: "POST", headers, body });
 
-      console.log('--- Context Received in Background ---');
-      console.log('Context length:', request.context.length);
-      console.log('Context preview:', request.context.substring(0, 100) + '...');
-      console.log('------------------------------------');
-
-      // MOCK RESPONSE - Replace this with actual LLM API call
-      const mockCompletions = [
-        "and helps streamline your workflow efficiently.",
-        "to enhance productivity across multiple platforms.",
-        "that integrates seamlessly with your existing tools.",
-        "providing intelligent suggestions in real-time.",
-        "designed to make coding faster and easier."
-      ];
-      
-      const simulatedResponse = mockCompletions[Math.floor(Math.random() * mockCompletions.length)];
-      
-      // Simulate network delay
-      setTimeout(() => {
-        sendResponse({
-          completion: simulatedResponse
-        });
-      }, 300);
-    });
-
-    return true; // Async response
+      if (res.ok) {
+        const json = await res.json();
+        const completion = providerConfig.parseResponse(json);
+        return { completion };
+      } else if (res.status === 429 || res.status === 403) {
+        console.log(`Fallback triggered for ${config.provider}: ${res.status}`);
+        continue; // try next
+      } else {
+        console.error(`Error with ${config.provider}: ${res.status}`);
+        continue;
+      }
+    } catch (error) {
+      console.error(`Error with ${config.provider}: ${error.message}`);
+      continue;
+    }
   }
-  
-  // Check if extension is configured
-  if (request.action === 'checkConfiguration') {
-    chrome.storage.sync.get(['isConfigured'], ({ isConfigured }) => {
+
+  return { error: "All APIs failed. Check configurations." };
+}
+
+// Get usage for current primary config
+async function getUsage() {
+  const { apiConfigs } = await chrome.storage.sync.get("apiConfigs");
+  if (!apiConfigs || !apiConfigs.length) return "Not configured";
+
+  const primary = apiConfigs[0];
+  const providerConfig = providers[primary.provider];
+
+  if (!providerConfig.hasUsageApi) {
+    return primary.provider === "deepseek" || primary.provider === "ollama" || primary.provider === "lmstudio"
+      ? "Unlimited"
+      : "N/A";
+  }
+
+  return await providerConfig.getUsage(primary);
+}
+
+// Listens for messages
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "testApiKey") {
+    testApiKey(request.config).then(sendResponse);
+    return true;
+  }
+
+  if (request.action === "fetchCompletion") {
+    console.log("--- Context Received ---");
+    console.log("Context length:", request.context.length);
+    console.log("Context preview:", request.context.substring(0, 100) + "...");
+    console.log("Full context:", request.context); // Added for debugging
+    fetchCompletion(request.context).then(sendResponse);
+    return true;
+  }
+
+  if (request.action === "checkConfiguration") {
+    chrome.storage.sync.get("isConfigured", ({ isConfigured }) => {
       sendResponse({ isConfigured: isConfigured || false });
     });
+    return true;
+  }
+
+  if (request.action === "getUsage") {
+    getUsage().then((usage) => sendResponse({ usage }));
     return true;
   }
 });

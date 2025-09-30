@@ -36,7 +36,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "icon.png"
+        "icon.png",
+        "provider.html"
       ],
       "matches": [
         "<all_urls>"
