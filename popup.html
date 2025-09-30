@@ -6,41 +6,134 @@
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            width: 250px;
-            padding: 15px;
+            width: 280px;
+            padding: 20px;
             background-color: #f4f5f7;
+            margin: 0;
+        }
+        
+        .header {
             text-align: center;
-        }
-        h1 {
-            font-size: 18px;
-            color: #091e42;
-            margin-top: 0;
-        }
-        p {
-            font-size: 14px;
-            color: #5e6c84;
             margin-bottom: 20px;
         }
+        
+        h1 {
+            font-size: 20px;
+            color: #091e42;
+            margin: 0 0 5px 0;
+        }
+        
+        .version {
+            font-size: 12px;
+            color: #6b778c;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-dot.active {
+            background-color: #36b37e;
+        }
+        
+        .status-dot.inactive {
+            background-color: #ff5630;
+        }
+        
+        .status-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #172b4d;
+        }
+        
+        .status-description {
+            font-size: 13px;
+            color: #5e6c84;
+            line-height: 1.4;
+        }
+        
         button {
             width: 100%;
             padding: 10px;
             border: none;
             border-radius: 4px;
-            background-color: #0052cc;
-            color: white;
             font-weight: 500;
+            font-size: 14px;
             cursor: pointer;
             transition: background-color 0.2s;
+            margin-bottom: 8px;
         }
-        button:hover {
+        
+        .primary-button {
+            background-color: #0052cc;
+            color: white;
+        }
+        
+        .primary-button:hover {
             background-color: #0065ff;
+        }
+        
+        .secondary-button {
+            background-color: #f4f5f7;
+            color: #172b4d;
+        }
+        
+        .secondary-button:hover {
+            background-color: #ebecf0;
+        }
+        
+        .feature-list {
+            font-size: 12px;
+            color: #5e6c84;
+            margin-top: 15px;
+            padding-left: 20px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
-    <h1>IntelliType AI</h1>
-    <p>AI-powered autocomplete is active. Configure your settings via the options page.</p>
-    <button id="optionsButton">Go to Options</button>
+    <div class="header">
+        <h1>⚡ IntelliType</h1>
+        <div class="version">AI-Powered Autocomplete</div>
+    </div>
+    
+    <div class="status-card">
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <div class="status-text" id="statusText">Checking status...</div>
+        </div>
+        <div class="status-description" id="statusDescription"></div>
+    </div>
+    
+    <button class="primary-button" id="optionsButton">Configure Settings</button>
+    <button class="secondary-button" id="reloadButton">Reload Extension</button>
+    
+    <ul class="feature-list">
+        <li>Works on all text inputs</li>
+        <li>Press Tab to accept suggestions</li>
+        <li>Context-aware completions</li>
+    </ul>
+    
     <script src="popup.js"></script>
 </body>
 </html>

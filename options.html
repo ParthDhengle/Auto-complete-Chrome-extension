@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF--8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IntelliType Options</title>
     <style>
@@ -80,19 +80,76 @@
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.2s;
+            position: relative;
         }
 
-        button:hover {
+        button:hover:not(:disabled) {
             background-color: #0065ff;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        button:disabled .spinner {
+            display: block;
+        }
+
+        button:disabled .button-text {
+            opacity: 0;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         #status {
             margin-top: 20px;
             text-align: center;
             font-size: 14px;
-            color: #0065ff;
-            height: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            min-height: 20px;
             transition: opacity 0.3s;
+        }
+
+        .status-success {
+            background-color: #e3fcef;
+            color: #006644;
+            border: 1px solid #79f2c0;
+        }
+
+        .status-error {
+            background-color: #ffebe6;
+            color: #bf2600;
+            border: 1px solid #ff8f73;
+        }
+
+        .status-loading {
+            background-color: #deebff;
+            color: #0052cc;
+            border: 1px solid #4c9aff;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #6b778c;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -103,20 +160,26 @@
         <p>Configure your AI model and API key to enable smart completions.</p>
         
         <div class="form-group">
-            <label for="apiModel">AI Model</label>
+            <label for="apiModel">AI Provider</label>
             <select id="apiModel">
-                <option value="gemini-2.5-flash-preview-05-20">Gemini 1.5 Flash</option>
-                <!-- Add other models here as needed -->
-                <option value="openai-gpt-4">OpenAI GPT-4 (Placeholder)</option>
+                <option value="gemini-2.5-flash-preview-05-20">Google Gemini 1.5 Flash</option>
+                <option value="openai-gpt-4">OpenAI GPT-4</option>
+                <option value="openai-gpt-3.5">OpenAI GPT-3.5 Turbo</option>
+                <option value="anthropic-claude">Anthropic Claude</option>
             </select>
+            <div class="help-text">Select your preferred AI provider</div>
         </div>
 
         <div class="form-group">
-            <label for="apiKey">Your API Key</label>
-            <input type="password" id="apiKey" placeholder="Enter your secret API key">
+            <label for="apiKey">API Key</label>
+            <input type="password" id="apiKey" placeholder="Enter your API key">
+            <div class="help-text">Your API key is stored locally and never shared</div>
         </div>
         
-        <button id="saveButton">Save Settings</button>
+        <button id="saveButton">
+            <span class="button-text">Save & Test Configuration</span>
+            <span class="spinner"></span>
+        </button>
         <div id="status"></div>
     </div>
 
