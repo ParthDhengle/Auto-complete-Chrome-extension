@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF--8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliType Options</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #172b4d;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #091e42;
+        }
+        
+        p {
+            font-size: 14px;
+            color: #5e6c84;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #dfe1e6;
+            background-color: #fafbfc;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4c9aff;
+            box-shadow: 0 0 0 2px rgba(76, 154, 255, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #0052cc;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0065ff;
+        }
+
+        #status {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #0065ff;
+            height: 20px;
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>IntelliType Settings</h1>
+        <p>Configure your AI model and API key to enable smart completions.</p>
+        
+        <div class="form-group">
+            <label for="apiModel">AI Model</label>
+            <select id="apiModel">
+                <option value="gemini-2.5-flash-preview-05-20">Gemini 1.5 Flash</option>
+                <!-- Add other models here as needed -->
+                <option value="openai-gpt-4">OpenAI GPT-4 (Placeholder)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="apiKey">Your API Key</label>
+            <input type="password" id="apiKey" placeholder="Enter your secret API key">
+        </div>
+        
+        <button id="saveButton">Save Settings</button>
+        <div id="status"></div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+</html>
