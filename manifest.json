@@ -1,47 +1,57 @@
 {
   "manifest_version": 3,
-  "name": "IntelliType - AI Autocomplete",
+  "name": "NOVA - AI Autocomplete",
   "version": "1.0",
   "description": "Get intelligent autocomplete suggestions in any textbox on the web.",
-  "permissions": [
-    "scripting",
-    "activeTab",
-    "storage"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+
+  "icons": {
+    "16": "icons/NOVA_icon_white(dark)16.png",
+    "32": "icons/NOVA_icon_white(dark)32.png",
+    "48": "icons/NOVA_icon_white(dark)48.png",
+    "128": "icons/NOVA_icon_white(dark)128.png"
+  },
+
+  "permissions": ["scripting", "activeTab", "storage"],
+  "host_permissions": ["<all_urls>"],
+
   "action": {
     "default_popup": "popup.html",
-    "default_icon": "icon.png"
+    "default_icon": {
+      "16": "icons/NOVA_icon_white(dark)16.png",
+      "32": "icons/NOVA_icon_white(dark)32.png",
+      "48": "icons/NOVA_icon_white(dark)48.png"
+    }
   },
+
   "options_page": "options.html",
+
   "background": {
     "service_worker": "background.js"
   },
+
   "content_scripts": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "content.js"
-      ],
-      "css": [
-        "style.css"
-      ],
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["style.css"],
       "run_at": "document_idle"
     }
   ],
+
   "web_accessible_resources": [
     {
       "resources": [
-        "icon.png",
+        "icons/NOVA_icon_black(light)16.png",
+        "icons/NOVA_icon_black(light)32.png",
+        "icons/NOVA_icon_black(light)48.png",
+        "icons/NOVA_icon_black(light)128.png",
+        "icons/NOVA_icon_white(dark)16.png",
+        "icons/NOVA_icon_white(dark)32.png",
+        "icons/NOVA_icon_white(dark)48.png",
+        "icons/NOVA_icon_white(dark)128.png",
         "provider.html"
       ],
-      "matches": [
-        "<all_urls>"
-      ]
+      "matches": ["<all_urls>"]
     }
   ]
 }

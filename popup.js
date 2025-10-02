@@ -7,6 +7,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const usageText = document.getElementById("usageText");
   const optionsButton = document.getElementById("optionsButton");
   const reloadButton = document.getElementById("reloadButton");
+function detectThemeAndNotify() {
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  chrome.runtime.sendMessage({ action: "updateIcon", theme: isDark ? "dark" : "light" });
+}
+
+// Run on load + whenever theme changes
+detectThemeAndNotify();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener("change", detectThemeAndNotify);
 
   // Check extension configuration status
   function checkStatus() {

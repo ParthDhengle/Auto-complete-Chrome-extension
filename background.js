@@ -18,6 +18,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
+
 // Provider configurations
 const providers = {
   "google-gemini": {
@@ -26,6 +27,7 @@ const providers = {
     getBody: (prompt) =>
       JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 100 }, // Added for budget control
       }),
     getParams: (key) => `?key=${key}`,
     parseResponse: (json) => json.candidates[0].content.parts[0].text.trim(),
@@ -165,7 +167,7 @@ async function testApiKey(config) {
       return { valid: false, message: 'Unsupported provider' };
     }
 
-    let url = providerConfig.getUrl(config.value); // for local, value is baseUrl
+    let url = providerConfig.getUrl(config.model || config.value); // Use model where needed; value is key or baseUrl
     if (config.provider === 'google-gemini') {
       url += providerConfig.getParams(config.value);
     }
@@ -183,9 +185,12 @@ async function testApiKey(config) {
     return { valid: false, message: 'API test failed: ' + error.message };
   }
 }
+
 // Fetch completion using fallbacks
 async function fetchCompletion(context) {
-  const prompt = `Provide the next phrase or sentence to complete this text: ${context}`;
+  // Updated prompt: More specific for autocomplete, emphasizes brevity for budget (reduces token usage/costs)
+  const prompt = `You are an autocomplete assistant. Given the following text, provide ONLY the next 1-2 natural phrases or sentences to complete it concisely. Do not add explanations or extra text. Text to complete: "${context}"`;
+
   const { apiConfigs, isConfigured } = await chrome.storage.sync.get(["apiConfigs", "isConfigured"]);
 
   if (!isConfigured || !apiConfigs.length) {
@@ -195,7 +200,7 @@ async function fetchCompletion(context) {
   for (const config of apiConfigs) {
     try {
       const providerConfig = providers[config.provider];
-      let url = providerConfig.getUrl(config.value);
+      let url = providerConfig.getUrl(config.model || config.value); // Handle model or baseUrl
       if (config.provider === "google-gemini") {
         url += providerConfig.getParams(config.value);
       }
@@ -206,13 +211,12 @@ async function fetchCompletion(context) {
       if (res.ok) {
         const json = await res.json();
         const completion = providerConfig.parseResponse(json);
+        console.log(`Completion from ${config.provider}: ${completion}`); // Added logging for debugging
         return { completion };
-      } else if (res.status === 429 || res.status === 403) {
-        console.log(`Fallback triggered for ${config.provider}: ${res.status}`);
-        continue; // try next
       } else {
-        console.error(`Error with ${config.provider}: ${res.status}`);
-        continue;
+        // Broader fallback: Trigger on any error, but log details
+        console.log(`Fallback triggered for ${config.provider}: ${res.status} - ${await res.text()}`);
+        continue; // Try next config
       }
     } catch (error) {
       console.error(`Error with ${config.provider}: ${error.message}`);
@@ -266,5 +270,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getUsage") {
     getUsage().then((usage) => sendResponse({ usage }));
     return true;
+  }
+  if (request.action === "updateIcon") {
+    const theme = request.theme;
+    chrome.action.setIcon({
+      path: theme === "dark"
+        ? {
+            16: "icons/icon16_white.png",
+            32: "icons/icon32_white.png",
+            48: "icons/icon48_white.png",
+            128: "icons/icon128_white.png"
+          }
+        : {
+            16: "icons/icon16_black.png",
+            32: "icons/icon32_black.png",
+            48: "icons/icon48_black.png",
+            128: "icons/icon128_black.png"
+          }
+    });
   }
 });
