@@ -3,7 +3,7 @@
 /* This provides the styling for the ghost text overlay. */
 #intellitype-ghost {
   position: absolute;
-  /* This will be overwritten by JS for positioning, but good for fallback */
+  /* This will be overwritten by JS, but good for fallback */
   background: transparent;
   color: grey;
   opacity: 0.6;
@@ -14,9 +14,4 @@
   display: none;
   /* Initially hidden */
   /* Removed white-space: pre; as it's now set dynamically in JS */
-}
-
-/* Styles for the suggestion panel (injected dynamically, but can be enhanced here if needed) */
-#intellitype-suggestion-panel {
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }

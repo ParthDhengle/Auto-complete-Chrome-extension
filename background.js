@@ -16,6 +16,7 @@ chrome.runtime.onInstalled.addListener((details) => {
       }
     );
   }
+  setIcon();
 });
 
 
@@ -24,10 +25,10 @@ const providers = {
   "google-gemini": {
     getUrl: (model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
     getHeaders: (key) => ({ "Content-Type": "application/json" }),
-    getBody: (prompt, model, maxTokens = 100) =>
+    getBody: (prompt) =>
       JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: maxTokens },
+        generationConfig: { maxOutputTokens: 100 }, // Added for budget control
       }),
     getParams: (key) => `?key=${key}`,
     parseResponse: (json) => json.candidates[0].content.parts[0].text.trim(),
@@ -37,11 +38,11 @@ const providers = {
   openai: {
     getUrl: () => "https://api.openai.com/v1/chat/completions",
     getHeaders: (key) => ({ "Content-Type": "application/json", Authorization: `Bearer ${key}` }),
-    getBody: (prompt, model, maxTokens = 100) =>
+    getBody: (prompt, model) =>
       JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: maxTokens,
+        max_tokens: 100,
       }),
     parseResponse: (json) => json.choices[0].message.content.trim(),
     testPrompt: "Hello",
@@ -54,11 +55,11 @@ const providers = {
       "x-api-key": key,
       "anthropic-version": "2023-06-01",
     }),
-    getBody: (prompt, model, maxTokens = 100) =>
+    getBody: (prompt, model) =>
       JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: maxTokens,
+        max_tokens: 100,
       }),
     parseResponse: (json) => json.content[0].text.trim(),
     testPrompt: "Hello",
@@ -67,11 +68,11 @@ const providers = {
   groq: {
     getUrl: () => "https://api.groq.com/openai/v1/chat/completions",
     getHeaders: (key) => ({ "Content-Type": "application/json", Authorization: `Bearer ${key}` }),
-    getBody: (prompt, model, maxTokens = 100) =>
+    getBody: (prompt, model) =>
       JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: maxTokens,
+        max_tokens: 100,
       }),
     parseResponse: (json) => json.choices[0].message.content.trim(),
     testPrompt: "test",
@@ -93,11 +94,11 @@ const providers = {
   deepseek: {
     getUrl: () => "https://api.deepseek.com/v1/chat/completions",
     getHeaders: (key) => ({ "Content-Type": "application/json", Authorization: `Bearer ${key}` }),
-    getBody: (prompt, model, maxTokens = 100) =>
+    getBody: (prompt, model) =>
       JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: maxTokens,
+        max_tokens: 100,
       }),
     parseResponse: (json) => json.choices[0].message.content.trim(),
     testPrompt: "Hello",
@@ -106,11 +107,11 @@ const providers = {
   openrouter: {
     getUrl: () => "https://openrouter.ai/api/v1/chat/completions",
     getHeaders: (key) => ({ "Content-Type": "application/json", Authorization: `Bearer ${key}` }),
-    getBody: (prompt, model, maxTokens = 100) =>
+    getBody: (prompt, model) =>
       JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: maxTokens,
+        max_tokens: 100,
       }),
     parseResponse: (json) => json.choices[0].message.content.trim(),
     testPrompt: "Hello",
@@ -134,11 +135,11 @@ const providers = {
   ollama: {
     getUrl: (baseUrl) => `${baseUrl}/v1/chat/completions`,
     getHeaders: () => ({ "Content-Type": "application/json" }),
-    getBody: (prompt, model, maxTokens = 100) =>
+    getBody: (prompt, model) =>
       JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: maxTokens,
+        max_tokens: 100,
       }),
     parseResponse: (json) => json.choices[0].message.content.trim(),
     testPrompt: "Hello",
@@ -147,11 +148,11 @@ const providers = {
   lmstudio: {
     getUrl: (baseUrl) => `${baseUrl}/v1/chat/completions`,
     getHeaders: () => ({ "Content-Type": "application/json" }),
-    getBody: (prompt, model, maxTokens = 100) =>
+    getBody: (prompt, model) =>
       JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: maxTokens,
+        max_tokens: 100,
       }),
     parseResponse: (json) => json.choices[0].message.content.trim(),
     testPrompt: "Hello",
@@ -172,7 +173,7 @@ async function testApiKey(config) {
       url += providerConfig.getParams(config.value);
     }
     const headers = providerConfig.getHeaders(config.value);
-    const body = providerConfig.getBody(providerConfig.testPrompt, config.model, 10);
+    const body = providerConfig.getBody(providerConfig.testPrompt, config.model);
     const res = await fetch(url, { method: 'POST', headers, body });
 
     if (res.ok) {
@@ -205,7 +206,7 @@ async function fetchCompletion(context) {
         url += providerConfig.getParams(config.value);
       }
       const headers = providerConfig.getHeaders(config.value);
-      const body = providerConfig.getBody(prompt, config.model, 50);
+      const body = providerConfig.getBody(prompt, config.model);
       const res = await fetch(url, { method: "POST", headers, body });
 
       if (res.ok) {
@@ -220,44 +221,6 @@ async function fetchCompletion(context) {
       }
     } catch (error) {
       console.error(`Error with ${config.provider}: ${error.message}`);
-      continue;
-    }
-  }
-
-  return { error: "All APIs failed. Check configurations." };
-}
-
-// Improve full text using fallbacks
-async function improveText(fullText) {
-  const prompt = `Improve this text for better clarity, grammar, flow, and overall quality (like refining an email or document). Keep the original meaning and length similar: ${fullText}`;
-  const { apiConfigs, isConfigured } = await chrome.storage.sync.get(["apiConfigs", "isConfigured"]);
-
-  if (!isConfigured || !apiConfigs.length) {
-    return { error: "No API configured. Please set up in options." };
-  }
-
-  for (const config of apiConfigs) {
-    try {
-      const providerConfig = providers[config.provider];
-      let url = providerConfig.getUrl(config.model || config.value);
-      if (config.provider === "google-gemini") {
-        url += providerConfig.getParams(config.value);
-      }
-      const headers = providerConfig.getHeaders(config.value);
-      const body = providerConfig.getBody(prompt, config.model, 1000);
-      const res = await fetch(url, { method: "POST", headers, body });
-
-      if (res.ok) {
-        const json = await res.json();
-        const improved = providerConfig.parseResponse(json);
-        console.log(`Improved text from ${config.provider}: ${improved.substring(0, 100)}...`);
-        return { improved };
-      } else {
-        console.log(`Fallback triggered for ${config.provider} in improve: ${res.status} - ${await res.text()}`);
-        continue;
-      }
-    } catch (error) {
-      console.error(`Error with ${config.provider} in improve: ${error.message}`);
       continue;
     }
   }
@@ -298,13 +261,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
-  if (request.action === "improveText") {
-    console.log("--- Improve Text Received ---");
-    console.log("Text length:", request.text.length);
-    improveText(request.text).then(sendResponse);
-    return true;
-  }
-
   if (request.action === "checkConfiguration") {
     chrome.storage.sync.get("isConfigured", ({ isConfigured }) => {
       sendResponse({ isConfigured: isConfigured || false });
@@ -327,10 +283,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             128: "icons/NOVA_icon_white(dark)128.png"
           }
         : {
-            16: "icons/NOVA_icon_black(dark)16.png",
-            32: "icons/NOVA_icon_black(dark)32.png",
-            48: "icons/NOVA_icon_black(dark)48.png",
-            128: "icons/NOVA_icon_black(dark)128.png"
+            16: "icons/NOVA_icon_black(light)16.png",
+            32: "icons/NOVA_icon_black(light)32.png",
+            48: "icons/NOVA_icon_black(light)48.png",
+            128: "icons/NOVA_icon_black(light)128.png"
           }
     });
   }
